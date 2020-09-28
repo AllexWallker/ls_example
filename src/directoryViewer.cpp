@@ -6,9 +6,10 @@
 #include <sys/stat.h>
 
 
-directoryViewer::directoryViewer(fs::path workingDirectory, std::string command) {
-    parseCommand(command);
-    getDirectoryPaths(workingDirectory);
+directoryViewer::directoryViewer(fs::path workingDirectory, std::string keys) {
+    parseCommand(keys);
+    auto paths = getDirectoryPaths(workingDirectory);
+    getFilesData(paths);
 }
 
 void directoryViewer::parseCommand(std::string command) {
@@ -20,7 +21,7 @@ void directoryViewer::parseCommand(std::string command) {
     }
 }
 
-void directoryViewer::getDirectoryPaths(fs::path workDir) {
+std::vector<fs::path> directoryViewer::getDirectoryPaths(fs::path workDir) {
     std::vector<fs::path> dirs; 
     std::vector<fs::path> files;
     for (const auto & entry : fs::directory_iterator(workDir)) {
@@ -36,17 +37,18 @@ void directoryViewer::getDirectoryPaths(fs::path workDir) {
         }
     }
     dirs.insert(dirs.end(), files.begin(), files.end());
-    getPathsData(dirs);
+    return dirs;
 }
 
-void directoryViewer::getPathsData(std::vector<fs::path> paths) {
-    if(lKey) {
+void directoryViewer::getFilesData(std::vector<fs::path> paths) {
+    if(true) {
         std::vector<std::string> outputs;
         for (const auto filePath : paths) {
             std::string output = "";
             output += getFilePermissions(fs::status(filePath).permissions());
+            output += getHardLinksCount(filePath);
             output += getFileOwner(filePath);
-            //output += getFileSize(filePath);
+            output += getFileSize(filePath);
             output += getFileLastWriteTime(filePath);            
             output += filePath.filename().native().c_str();
             outputs.push_back(output);
@@ -119,12 +121,24 @@ std::string directoryViewer::getFileLastWriteTime(const fs::path &filePath) {
 std::string directoryViewer::getFileSize(const fs::path &filePath) {
     std::string out = "";
     if(fs::is_directory(filePath)) {
-        out += "dir  ";
+        for(const auto & entry : fs::recursive_directory_iterator(filePath)) {   
+            if(!fs::is_directory(entry.path())) {
+                out = std::to_string(fs::file_size(entry.path()));
+                out += "    ";
+            }
+        }   
     }
     else {
-        out += fs::file_size(filePath);
+        out = std::to_string(fs::file_size(filePath));
         out += "    ";
     }
+    return out;
+}
+
+std::string directoryViewer::getHardLinksCount(const fs::path &filePath) {
+    std::string out = "";
+    auto ll = fs::hard_link_count(filePath);
+    out = std::to_string(ll) + " ";
     return out;
 }
 
@@ -132,5 +146,7 @@ bool directoryViewer::isFileHidden(const fs::path &filePath) {
     fs::path::string_type name = filePath.filename();
     return (name != ".." && name != "."  && name[0] == '.'); 
 }
+
+
 
 std::string dist = "     192 ";
