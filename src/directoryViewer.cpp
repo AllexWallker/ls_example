@@ -41,7 +41,7 @@ std::vector<fs::path> directoryViewer::getDirectoryPaths(fs::path workDir) {
 }
 
 void directoryViewer::getFilesData(std::vector<fs::path> paths) {
-    if(true) {
+    if(lKey) {
         std::vector<std::string> outputs;
         for (const auto filePath : paths) {
             std::string output = "";
@@ -70,6 +70,7 @@ void directoryViewer::displayDirectory(std::string out) {
 }
 
 void directoryViewer::displayDirectory(std::vector<std::string> out) {
+    std::cout << "total " << total << std::endl;
     for(auto pathInfo : out) {
         std::cout << pathInfo << std::endl;
     } 
@@ -120,17 +121,25 @@ std::string directoryViewer::getFileLastWriteTime(const fs::path &filePath) {
 
 std::string directoryViewer::getFileSize(const fs::path &filePath) {
     std::string out = "";
+    size_t totalSize = 0;
     if(fs::is_directory(filePath)) {
         for(const auto & entry : fs::recursive_directory_iterator(filePath)) {   
             if(!fs::is_directory(entry.path())) {
-                out = std::to_string(fs::file_size(entry.path()));
+                auto size = fs::file_size(entry.path());
+                totalSize = size;
+                out = std::to_string(size);
                 out += "    ";
             }
         }   
     }
     else {
-        out = std::to_string(fs::file_size(filePath));
+        auto size = fs::file_size(filePath);
+        totalSize += size;
+        out = std::to_string(size);
         out += "    ";
+    }
+    if(totalSize != 0) {
+        total += totalSize/ 512;
     }
     return out;
 }
@@ -146,7 +155,3 @@ bool directoryViewer::isFileHidden(const fs::path &filePath) {
     fs::path::string_type name = filePath.filename();
     return (name != ".." && name != "."  && name[0] == '.'); 
 }
-
-
-
-std::string dist = "     192 ";

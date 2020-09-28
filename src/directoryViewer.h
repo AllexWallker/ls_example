@@ -22,4 +22,5 @@ private:
     bool isFileHidden(const fs::path &filePath);
     bool lKey = false;
     bool aKey = false;
+    int total = 0;
 };
