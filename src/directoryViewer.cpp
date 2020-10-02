@@ -6,17 +6,15 @@
 #include <sys/stat.h>
 
 
-directoryViewer::directoryViewer(fs::path workingDirectory, std::string keys) {
-    parseCommand(keys);
-    auto paths = getDirectoryPaths(workingDirectory);
-    getFilesData(paths);
+directoryViewer::directoryViewer(std::string keys) {
+    parseKeys(keys);
 }
 
-void directoryViewer::parseCommand(std::string command) {
-    if(command.find("-l") != std::string::npos) {
+void directoryViewer::parseKeys(std::string keys) {
+    if(keys.find("-l") != std::string::npos) {
         lKey = true;
     }
-    if(command.find("-a") != std::string::npos) {
+    if(keys.find("-a") != std::string::npos) {
         aKey = true;
     }
 }
@@ -40,9 +38,9 @@ std::vector<fs::path> directoryViewer::getDirectoryPaths(fs::path workDir) {
     return dirs;
 }
 
-void directoryViewer::getFilesData(std::vector<fs::path> paths) {
-    if(lKey) {
-        std::vector<std::string> outputs;
+std::vector<std::string>  directoryViewer::getFilesData(std::vector<fs::path> paths) {
+    std::vector<std::string> outputs;
+    if(lKey) {        
         for (const auto filePath : paths) {
             std::string output = "";
             output += getFilePermissions(fs::status(filePath).permissions());
@@ -53,7 +51,6 @@ void directoryViewer::getFilesData(std::vector<fs::path> paths) {
             output += filePath.filename().native().c_str();
             outputs.push_back(output);
         }
-        displayDirectory(outputs);
     }
     else {
         std::string output = "";        
@@ -61,16 +58,16 @@ void directoryViewer::getFilesData(std::vector<fs::path> paths) {
             output += filePath.filename().native().c_str();
             output += "    ";
         }
-        displayDirectory(output); 
+        outputs.push_back(output); 
     }
-}
-
-void directoryViewer::displayDirectory(std::string out) {
-    std::cout << out << std::endl;
+    return outputs;
 }
 
 void directoryViewer::displayDirectory(std::vector<std::string> out) {
-    std::cout << "total " << total << std::endl;
+    if(lKey) {
+        std::cout << "total " << total << std::endl;
+    }
+    
     for(auto pathInfo : out) {
         std::cout << pathInfo << std::endl;
     } 
@@ -153,5 +150,5 @@ std::string directoryViewer::getHardLinksCount(const fs::path &filePath) {
 
 bool directoryViewer::isFileHidden(const fs::path &filePath) {
     fs::path::string_type name = filePath.filename();
-    return (name != ".." && name != "."  && name[0] == '.'); 
+    return (name.find_first_of(".") != std::string::npos);
 }

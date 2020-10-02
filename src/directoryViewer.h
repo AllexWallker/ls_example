@@ -6,14 +6,13 @@ namespace fs = std::filesystem;
 
 class directoryViewer {
 public:
-    directoryViewer(fs::path workingDirectory, std::string keys);
+    directoryViewer(std::string keys);
     ~directoryViewer() {}
     std::vector<fs::path> getDirectoryPaths(fs::path workDir);
-    void getFilesData(std::vector<fs::path> paths);
-private:
-    void displayDirectory(std::string out);
+    std::vector<std::string> getFilesData(std::vector<fs::path> paths);
     void displayDirectory(std::vector<std::string> out);
-    void parseCommand(std::string command);
+private: 
+    void parseKeys(std::string keys);
     std::string getFilePermissions(fs::perms p);
     std::string getFileOwner(const fs::path &filePath);
     std::string getFileLastWriteTime(const fs::path &filePath);

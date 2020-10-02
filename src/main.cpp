@@ -4,8 +4,6 @@
 
 #include "directoryViewer.h"
 
-namespace fs = std::filesystem;
-
 int main(int argc, const char * argv[]) {
 	std::string keys = "";
     std::string path = "";
@@ -29,7 +27,10 @@ int main(int argc, const char * argv[]) {
         workdir = fs::current_path();
     }
     if(fs::is_directory(workdir)) {
-        directoryViewer(workdir, keys);
+        auto dirViewer = new directoryViewer(keys);
+        auto paths = dirViewer->getDirectoryPaths(workdir);
+        auto filesData = dirViewer->getFilesData(paths);
+        dirViewer->displayDirectory(filesData);
     }
     else {
         std::cout << "no such directory\n";
