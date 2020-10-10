@@ -31,6 +31,8 @@ int main(int argc, const char * argv[]) {
         auto paths = dirViewer->getDirectoryPaths(workdir);
         auto filesData = dirViewer->getFilesData(paths);
         dirViewer->displayDirectory(filesData);
+
+        delete dirViewer;
     }
     else {
         std::cout << "no such directory\n";
